@@ -1,4 +1,4 @@
-# tinyurl-go
+# url-shortner-go
 
 ### Backend
 
