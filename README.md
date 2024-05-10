@@ -39,10 +39,4 @@ Sample Response (200 Status Code):
 
 User can generate the short links and also can view past links they have shortened
 
-## Screenshots 📷
-
-|                      Home Page                       |                     History Tab                      |
-| :--------------------------------------------------: | :--------------------------------------------------: |
-| <img src="imgs/ss_1.png" width="250" height="550" /> | <img src="imgs/ss_2.png" width="250" height="550" /> |
-
 #### References: [Building an URL shortener in Go](https://www.eddywm.com/lets-build-a-url-shortener-in-go-part-iv-forwarding/)
