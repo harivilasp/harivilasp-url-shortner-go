@@ -1,42 +1,87 @@
-# url-shortner-go
+# URL Shortener — Go + Swift
 
-### Backend
+A full-stack URL shortener with a Go backend and a SwiftUI iOS client.
 
-1. Redis for Caching : redis-server
-2. PostgresSQL for storing URL mappings
+**Backend:** Go · PostgreSQL · Redis  
+**iOS Client:** SwiftUI · CoreData
 
-### Client
-
-1. SwiftUI for the app
-2. CoreData to store url mappings locally on client side
-
-### API Endpoints
-
-- #### `/create-short-url`, which is a `POST` request validates and creates a short url from long url and user id passed to it
+## Architecture
 
 ```
-curl --location --request POST 'http://localhost:9098/create-short-url' \
---header 'Content-Type: text/plain' \
---data-raw '{
-    "long_url": "https://amazon.com",
-    "user_id" : "e0dba740-fc4b-497872c-d360239e"
-}
-'
+iOS Client (SwiftUI + CoreData)
+         │
+         │ HTTP
+         ▼
+  Go API Server (port 9098)
+    ├── POST /create-short-url  →  Redis cache + PostgreSQL
+    └── GET  /re/:shortUrl      →  Redis lookup → redirect
 ```
 
-Sample Response (200 Status Code):
+- **Redis** — caches URL mappings for sub-millisecond reads
+- **PostgreSQL** — durable store for all shortened URLs
+- **CoreData** — client-side history of shortened links
 
-```
+## API
+
+### Shorten a URL
+
+```bash
+POST /create-short-url
+Content-Type: application/json
+
 {
-    "message": "short url created successfully",
-    "short_url": "http://localhost:9098/re/SwwSgzBe"
+  "long_url": "https://amazon.com",
+  "user_id":  "e0dba740-fc4b-4978-a360-239e"
 }
 ```
 
-- #### `/re/:shortUrl`, which is a `GET` request redirecting to the `shortUrl` mapping present in DB/Cache
+**Response (200)**
 
-#### Client Side
+```json
+{
+  "message": "short url created successfully",
+  "short_url": "http://localhost:9098/re/SwwSgzBe"
+}
+```
 
-User can generate the short links and also can view past links they have shortened
+### Redirect
 
-#### References: [Building an URL shortener in Go](https://www.eddywm.com/lets-build-a-url-shortener-in-go-part-iv-forwarding/)
+```
+GET /re/:shortUrl  →  302 redirect to original URL
+```
+
+## Backend Project Structure
+
+```
+backend/
+├── main.go
+├── handler/        # HTTP request handlers
+├── shortener/      # URL encoding logic + tests
+├── cache/          # Redis client + tests
+├── dbservice/      # PostgreSQL CRUD + tests
+└── constants/      # Config constants
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Go 1.18+
+- PostgreSQL
+- Redis (`redis-server`)
+
+### Run Backend
+
+```bash
+cd backend
+redis-server &          # start Redis
+go run main.go          # start API on :9098
+```
+
+### iOS Client
+
+Open the project in Xcode and run on a simulator or device. The client uses CoreData to persist a local history of shortened links.
+
+## References
+
+- [Building a URL shortener in Go](https://www.eddywm.com/lets-build-a-url-shortener-in-go-part-iv-forwarding/)
